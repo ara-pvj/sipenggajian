@@ -1,217 +1,216 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <title>Rekap Absensi</title>
 
-<meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm 10mm;
+        }
 
-<title>Rekap Absensi</title>
+        * {
+            box-sizing: border-box;
+        }
 
-<style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
 
-body{
-    font-family: Arial, sans-serif;
-    margin:40px;
-}
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #111;
+            font-size: 13px;
+            background: #fff;
+        }
 
-.header{
-    display:flex;
-    align-items:center;
-    border-bottom:3px solid black;
-    padding-bottom:15px;
-    margin-bottom:20px;
-}
+        .report {
+            width: 100%;
+        }
 
-.logo{
-    width:80px;
-    margin-right:20px;
-}
+        .header {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
 
-.kop{
-    flex:1;
-    text-align:center;
-}
+        .logo {
+            width: 78px;
+            height: 78px;
+            object-fit: contain;
+            margin-right: 18px;
+        }
 
-.kop h2,
-.kop h3{
-    margin:0;
-}
+        .kop {
+            flex: 1;
+            text-align: center;
+            padding-right: 90px;
+        }
 
-.kop p{
-    margin:4px 0;
-    font-size:13px;
-}
+        .kop h2 {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
+        .kop h3 {
+            margin: 2px 0 5px;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
 
-table th,
-table td{
-    border:1px solid #000;
-    padding:8px;
-    font-size:12px;
-}
+        .kop p {
+            margin: 2px 0;
+            font-size: 13px;
+            line-height: 1.3;
+        }
 
-table th{
-    background:#f3f3f3;
-}
+        .period {
+            margin: 10px 0 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
 
-.text-center{
-    text-align:center;
-}
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 0;
+        }
 
-.ttd{
-    width:100%;
-    margin-top:60px;
-}
+        table.data th,
+        table.data td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            font-size: 13px;
+            vertical-align: middle;
+        }
 
-.ttd td{
-    border:none;
-    text-align:center;
-    width:50%;
-}
+        table.data th {
+            background: #f2f2f2;
+            text-align: center;
+            font-weight: 700;
+        }
 
-</style>
+        table.data td.center {
+            text-align: center;
+        }
 
+        table.data tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        .ttd {
+            width: 100%;
+            margin-top: 28px;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .ttd td {
+            border: none;
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+            font-size: 11px;
+        }
+
+        .ttd-space {
+            height: 55px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
+<div class="report">
 
-<div class="header">
+    <div class="header">
+        <img src="{{ asset('images/logo.png') }}" class="logo" alt="Logo">
 
-    <img src="{{ asset('images/logo.png') }}" class="logo">
-
-    <div class="kop">
-
-        <h2>YAYASAN ISTANA AL-QUR'AN DELAPAN</h2>
-
-        <h3>SMP ROUDHOTUL MARDHIYYAH</h3>
-
-        <p>
-            Rekap Absensi Guru dan Staff
-        </p>
-
-        <p>
-            Tahun Pelajaran :
-            {{ $tahunAktif->tahun_ajaran }}
-        </p>
-
+        <div class="kop">
+            <h2>YAYASAN ISTANA AL-QUR'AN DELAPAN</h2>
+            <h3>SMP ROUDHOTUL MARDHIYYAH</h3>
+            <p>Rekap Absensi Guru dan Staff</p>
+            <p>Tahun Pelajaran : {{ $tahunAktif->tahun }}</p>
+        </div>
     </div>
+
+    @if(request('bulan'))
+        <div class="period">
+            Periode :
+            {{ \Carbon\Carbon::createFromDate(null, (int) request('bulan'), 1)->translatedFormat('F') }}
+            {{ date('Y') }}
+        </div>
+    @else
+        <div class="period">Periode : Semua Bulan</div>
+    @endif
+
+    <table class="data">
+        <thead>
+            <tr>
+                <th style="width: 6%;">No</th>
+                <th style="width: 38%;">Nama Pegawai</th>
+                <th style="width: 20%;">Jenis Pegawai</th>
+                <th style="width: 20%;">Jumlah Hadir</th>
+                <th style="width: 16%;">Total JP</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse($data as $item)
+                <tr>
+                    <td class="center">{{ $loop->iteration }}</td>
+                    <td>{{ $item->pegawai->nama }}</td>
+                    <td class="center">{{ ucfirst($item->jenis) }}</td>
+                    <td class="center">{{ $item->jumlah_hadir }} Hari</td>
+                    <td class="center">{{ $item->total_jp }} JP</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="5" class="center">Tidak ada data.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <table class="ttd">
+        <tr>
+            <td>
+                Mengetahui,
+                <div class="ttd-space"></div>
+                <b>Kepala Sekolah</b>
+            </td>
+
+            <td>
+                Bekasi, {{ now()->translatedFormat('d F Y') }}
+                <div class="ttd-space"></div>
+                <b>Tata Usaha</b>
+            </td>
+        </tr>
+    </table>
 
 </div>
 
-@if($namaBulan)
-
-<p>
-Periode :
-{{ $namaBulan }} {{ date('Y') }}
-</p>
-
-@endif
-
-<table>
-
-<thead>
-<tr>
-    <th>No</th>
-    <th>Nama Pegawai</th>
-    <th>Jenis Pegawai</th>
-    <th>Jumlah Hadir</th>
-    <th>Total JP</th>
-</tr>
-</thead>
-
-<tbody>
-
-@forelse($data as $item)
-
-<tr>
-
-    <td class="text-center">
-        {{ $loop->iteration }}
-    </td>
-
-    <td>
-        {{ $item->pegawai->nama }}
-    </td>
-
-    <td class="text-center">
-        {{ ucfirst($item->jenis) }}
-    </td>
-
-    <td class="text-center">
-        {{ $item->jumlah_hadir }} Hari
-    </td>
-
-    <td class="text-center">
-        @if($item->jenis == 'guru')
-            {{ $item->total_jp }} JP
-        @else
-            -
-        @endif
-    </td>
-
-</tr>
-
-@empty
-
-<tr>
-    <td colspan="5" class="text-center">
-        Tidak ada data.
-    </td>
-</tr>
-
-@endforelse
-
-</tbody>
-
-</table>
-
-<table class="ttd">
-
-<tr>
-
-<td>
-
-Mengetahui,
-
-<br><br>
-
-<b>Kepala Sekolah</b>
-
-<br><br><br><br>
-
-(...........................)
-
-</td>
-
-<td>
-
-Bekasi,
-{{ now()->translatedFormat('d F Y') }}
-
-<br><br>
-
-<b>Tata Usaha</b>
-
-<br><br><br><br>
-
-(...........................)
-
-</td>
-
-</tr>
-
-</table>
-
 <script>
-
-window.print();
-
+    window.print();
 </script>
-
 </body>
-
 </html>

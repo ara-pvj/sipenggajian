@@ -62,8 +62,10 @@
 
 <div class="flex justify-between items-center mb-6">
 
-    @if(auth()->user()->role === 'tu')
-    <a href="..." class="...">
+    @if(auth()->user()->role === 'tata_usaha')
+    <a href="{{ route('absensi.cetak', request('bulan') ? ['bulan' => request('bulan')] : []) }}"
+       target="_blank"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold transition">
         🖨️ Cetak Rekap
     </a>
 @endif

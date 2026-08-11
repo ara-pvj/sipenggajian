@@ -43,7 +43,34 @@
 </div>
 
 <!-- Absensi -->
-<a href="{{ route('absensi.kamera') }}" 
+@php
+    $pegawai = auth()->user()->pegawai;
+
+    $sudahAbsen = $pegawai
+        ? \App\Models\Absensi::where('pegawai_id', $pegawai->id)
+            ->whereDate('tanggal', today())
+            ->exists()
+        : false;
+@endphp
+
+@if($sudahAbsen)
+
+<div class="block bg-green-50 rounded-lg border border-green-200 p-4 mb-5">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+            <p class="font-semibold text-green-700">Sudah Absen</p>
+            <p class="text-sm text-gray-500">
+                Absensi hari ini sudah berhasil dilakukan.
+            </p>
+        </div>
+        <div class="text-green-600 text-xl font-bold">✓</div>
+    </div>
+</div>
+
+@else
+
+<a href="{{ route('absensi.kamera') }}"
    class="block bg-white rounded-lg border border-gray-200 p-4 mb-5 hover:bg-gray-50 transition">
     <div class="flex items-center justify-between">
         <div>
@@ -54,6 +81,8 @@
         <div class="text-gray-400">→</div>
     </div>
 </a>
+
+@endif
 
 <!-- Informasi -->
 <div class="bg-blue-50 rounded-lg border border-blue-200 p-4 mb-5">

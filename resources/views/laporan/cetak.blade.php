@@ -1,197 +1,233 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <title>Laporan Penggajian</title>
 
-<meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 12mm;
+        }
 
-<title>Laporan Penggajian</title>
+        * {
+            box-sizing: border-box;
+        }
 
-<style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
 
-body{
-    font-family: Arial, sans-serif;
-    margin:40px;
-}
+        body {
+            font-family: Arial, sans-serif;
+            color: #000;
+            font-size: 11px;
+            background: #fff;
+        }
 
-h2,h3{
-    text-align:center;
-    margin:0;
-}
+        .report {
+            width: 100%;
+        }
 
-p{
-    text-align:center;
-    margin:5px 0 20px;
-}
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
+        .header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
 
-table th,
-table td{
-    border:1px solid #000;
-    padding:8px;
-    font-size:12px;
-}
+        .header h3 {
+            margin: 3px 0 5px;
+            font-size: 15px;
+            font-weight: 700;
+        }
 
-table th{
-    background:#f3f3f3;
-}
+        .header p {
+            margin: 0;
+            font-size: 11px;
+        }
 
-.text-right{
-    text-align:right;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 10px;
+        }
 
-.text-center{
-    text-align:center;
-}
+        thead {
+            display: table-header-group;
+        }
 
-.total{
-    margin-top:20px;
-    font-size:16px;
-    font-weight:bold;
-}
+        tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
 
-.ttd{
-    margin-top:80px;
-    width:250px;
-    float:right;
-    text-align:center;
-}
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px 5px;
+            font-size: 10px;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
 
-</style>
+        th {
+            background: #f3f3f3;
+            text-align: center;
+            font-weight: 700;
+        }
 
+        .text-right {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .total {
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .ttd-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 28px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .ttd {
+            width: 190px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .ttd-space {
+            height: 55px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .report {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    <div class="report">
 
-<h2>SMP ROUDHOTUL MARDHIYYAH</h2>
+        <div class="header">
+            <h2>SMP ROUDHOTUL MARDHIYYAH</h2>
+            <h3>LAPORAN PENGGAJIAN</h3>
+            <p>
+                Periode :
+                {{ request('periode')
+                    ? \Carbon\Carbon::parse(request('periode'))->translatedFormat('F Y')
+                    : 'Semua Periode' }}
+            </p>
+        </div>
 
-<h3>LAPORAN PENGGAJIAN</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 4%;">No</th>
+                    <th style="width: 13%;">Nama</th>
+                    <th style="width: 10%;">Jabatan</th>
+                    <th style="width: 7%;">Jenis</th>
+                    <th style="width: 5%;">JP</th>
+                    <th style="width: 12%;">Gaji Mengajar</th>
+                    <th style="width: 12%;">Gaji Jabatan</th>
+                    <th style="width: 11%;">Gaji Pokok</th>
+                    <th style="width: 10%;">Transport</th>
+                    <th style="width: 11%;">Total Gaji</th>
+                    <th style="width: 5%;">Status</th>
+                </tr>
+            </thead>
 
-<p>
-Periode :
-{{ request('periode')
-? \Carbon\Carbon::parse(request('periode'))->translatedFormat('F Y')
-: 'Semua Periode' }}
-</p>
+            <tbody>
+                @foreach($penggajian as $item)
+                    <tr>
+                        <td class="text-center">{{ $loop->iteration }}</td>
 
-<table>
+                        <td>{{ $item->pegawai->nama }}</td>
 
-<thead>
+                        <td>{{ $item->pegawai->jabatan->nama_jabatan ?? '-' }}</td>
 
-<tr>
+                        <td class="text-center">
+                            {{ ucfirst($item->pegawai->jenis_pegawai) }}
+                        </td>
 
-<th>No</th>
+                        <td class="text-center">
+                            {{ $item->pegawai->jenis_pegawai == 'guru' ? $item->total_jam : '-' }}
+                        </td>
 
-<th>Nama</th>
+                        <td class="text-right">
+                            Rp {{ number_format($item->gaji_mengajar, 0, ',', '.') }}
+                        </td>
 
-<th>Jabatan</th>
+                        <td class="text-right">
+                            Rp {{ number_format($item->gaji_jabatan, 0, ',', '.') }}
+                        </td>
 
-<th>Jenis</th>
+                        <td class="text-right">
+                            Rp {{ number_format($item->gaji_pokok, 0, ',', '.') }}
+                        </td>
 
-<th>JP</th>
+                        <td class="text-right">
+                            Rp {{ number_format($item->transport, 0, ',', '.') }}
+                        </td>
 
-<th>Gaji Mengajar</th>
+                        <td class="text-right">
+                            Rp {{ number_format($item->gaji_total, 0, ',', '.') }}
+                        </td>
 
-<th>Gaji Jabatan</th>
+                        <td class="text-center">
+                            {{ $item->status }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
 
-<th>Gaji Pokok</th>
+        <div class="total">
+            Total Penggajian :
+            Rp {{ number_format($totalPenggajian, 0, ',', '.') }}
+        </div>
 
-<th>Transport</th>
+        <div class="ttd-wrapper">
+            <div class="ttd">
+                <div>
+                    Bekasi, {{ now()->translatedFormat('d F Y') }}
+                </div>
 
-<th>Total Gaji</th>
+                <div class="ttd-space"></div>
 
-<th>Status</th>
+                <b>Bendahara</b>
+            </div>
+        </div>
 
-</tr>
+    </div>
 
-</thead>
-
-<tbody>
-
-@foreach($penggajian as $item)
-
-<tr>
-
-<td class="text-center">
-{{ $loop->iteration }}
-</td>
-
-<td>
-{{ $item->pegawai->nama }}
-</td>
-
-<td>
-{{ $item->pegawai->jabatan->nama_jabatan ?? '-' }}
-</td>
-
-<td class="text-center">
-{{ ucfirst($item->pegawai->jenis_pegawai) }}
-</td>
-
-<td class="text-center">
-{{ $item->pegawai->jenis_pegawai=='guru' ? $item->total_jam : '-' }}
-</td>
-
-<td class="text-right">
-Rp {{ number_format($item->gaji_mengajar,0,',','.') }}
-</td>
-
-<td class="text-right">
-Rp {{ number_format($item->gaji_jabatan,0,',','.') }}
-</td>
-
-<td class="text-right">
-Rp {{ number_format($item->gaji_pokok,0,',','.') }}
-</td>
-
-<td class="text-right">
-Rp {{ number_format($item->transport,0,',','.') }}
-</td>
-
-<td class="text-right">
-Rp {{ number_format($item->gaji_total,0,',','.') }}
-</td>
-
-<td class="text-center">
-{{ $item->status }}
-</td>
-
-</tr>
-
-@endforeach
-
-</tbody>
-
-</table>
-
-<div class="total">
-
-Total Penggajian :
-Rp {{ number_format($totalPenggajian,0,',','.') }}
-
-</div>
-
-<div class="ttd">
-
-Bekasi,
-{{ now()->translatedFormat('d F Y') }}
-
-<br><br><br><br>
-
-<b>Bendahara</b>
-
-</div>
-
-<script>
-
-window.print();
-
-</script>
-
+    <script>
+        window.print();
+    </script>
 </body>
-
 </html>

@@ -75,6 +75,8 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
 
     $user = Auth::user();
     $pegawai = Pegawai::findOrFail($user->pegawai_id);
+
+    $tanggal = Carbon::now('Asia/Jakarta')->toDateString();
     
     $image = $request->foto_masuk;
     $image = str_replace('data:image/png;base64,', '', $image);
@@ -87,10 +89,10 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
         base64_decode($image)
     );
 
-    $hari = Carbon::parse($request->tanggal)
-        ->locale('id')
-        ->dayName;
-    $hari = ucfirst($hari);
+    $hari = Carbon::parse($tanggal)
+    ->locale('id')
+    ->dayName;
+$hari = ucfirst($hari);
 
     $jp = 0;
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
@@ -114,18 +116,18 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
         }
 
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
-            ->where('jadwal_mengajar_id', $jadwal->id)
-            ->whereDate('tanggal', $request->tanggal)
-            ->first();
+    ->where('jadwal_mengajar_id', $jadwal->id)
+    ->whereDate('tanggal', $tanggal)
+    ->first();
 
         if (!$absensi) {
             Absensi::create([
                 'pegawai_id' => $pegawai->id,
                 'tahun_pelajaran_id' => $tahunAktif->id,
                 'jadwal_mengajar_id' => $jadwal->id,
-                'tanggal' => $request->tanggal,
-                'jam_masuk' => now()->format('H:i:s'),
-                'jam_mengajar' => $jadwal->jumlah_jp, // <-- Perbaikan: ambil dari jadwal
+                'tanggal' => $tanggal,
+                'jam_masuk' => Carbon::now('Asia/Jakarta')->format('H:i:s'),
+                'jam_mengajar' => $jadwal->jumlah_jp, 
                 'foto_masuk' => $namaFoto,
                 'status' => 'Hadir',
             ]);
@@ -135,9 +137,9 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
 
         } elseif (is_null($absensi->jam_pulang)) {
             $absensi->update([
-                'jam_pulang' => now()->format('H:i:s'),
-                'foto_pulang' => $namaFoto,
-            ]);
+    'jam_pulang' => Carbon::now('Asia/Jakarta')->format('H:i:s'),
+    'foto_pulang' => $namaFoto,
+]);
 
             $pesan = 'Absensi selesai mengajar berhasil.';
             session(['jenis_absensi' => 'pulang']);
@@ -158,10 +160,9 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
     }
 
     // ===== STAFF / NON-GURU =====
-    // Cek apakah sudah absen hari ini
     $cekAbsensi = Absensi::where('pegawai_id', $pegawai->id)
-        ->whereDate('tanggal', $request->tanggal)
-        ->first();
+    ->whereDate('tanggal', $tanggal)
+    ->first();
 
     if ($cekAbsensi) {
         return response()->json([
@@ -173,19 +174,21 @@ $totalGuru = Pegawai::where('jenis_pegawai', 'guru')->count();
     // Simpan absensi untuk staff
     Absensi::create([
         'pegawai_id'   => $pegawai->id,
-        'tanggal'      => $request->tanggal,
-        'jam_masuk'    => now()->format('H:i:s'),
+        'tanggal'      => $tanggal,
+        'jam_masuk'    => Carbon::now('Asia/Jakarta')->format('H:i:s'),
         'jam_mengajar' => 0,
         'foto_masuk'   => $namaFoto,
         'status'       => 'Hadir',
     ]);
 
-    $pesan = 'Absensi berhasil disimpan.';
+   $pesan = 'Absensi berhasil disimpan.';
 
-    return response()->json([
-        'success' => true,
-        'message' => $pesan
-    ]);
+session(['jenis_absensi' => 'staff']);
+
+return response()->json([
+    'success' => true,
+    'message' => $pesan
+]);
 }
 
     /**
@@ -385,10 +388,10 @@ public function pilihSesi()
 {
     $pegawai = auth()->user()->pegawai;
 
-    // Ganti dengan hari ini untuk production
-    $hari = date('l', strtotime('today'));
+    $tanggalHariIni = Carbon::now('Asia/Jakarta')->toDateString();
 
-    // Mapping hari Indonesia
+    $hari = Carbon::now('Asia/Jakarta')->format('l');
+
     $hariMap = [
         'Sunday' => 'Minggu',
         'Monday' => 'Senin',
@@ -409,9 +412,8 @@ public function pilihSesi()
     foreach ($jadwalHariIni as $jadwal) {
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
             ->where('jadwal_mengajar_id', $jadwal->id)
-            ->whereDate('tanggal', today())
+            ->whereDate('tanggal', $tanggalHariIni)
             ->first();
-    
 
         if (!$absensi) {
             $jadwal->status_sesi = 'belum';
@@ -424,7 +426,6 @@ public function pilihSesi()
 
     return view('absensi.pilih-sesi', compact('jadwalHariIni'));
 }
-
 public function prosesSesi(Request $request)
 {
     $request->validate([
