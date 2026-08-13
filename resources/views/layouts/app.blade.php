@@ -57,58 +57,6 @@
 
 </div>
     
-    <!-- Overlay -->
-    <!-- Sidebar Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.querySelector('aside');
-        const overlay = document.getElementById('sidebarOverlay');
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const closeBtn = document.getElementById('sidebarClose');
-
-        function openSidebar() {
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-        }
-
-        function closeSidebar() {
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-        }
-
-        // Hamburger → buka sidebar
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function() {
-                openSidebar();
-            });
-        }
-
-        // X → tutup sidebar
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                closeSidebar();
-            });
-        }
-
-        // Klik area luar → tutup sidebar
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                closeSidebar();
-            });
-        }
-
-        // Kalau layar kembali desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.add('hidden');
-            } else {
-                closeSidebar();
-            }
-        });
-    });
-</script>
-    
     @stack('scripts')
 </body>
 </html>
