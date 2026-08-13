@@ -57,14 +57,7 @@
 
 </div>
     
-    <!-- Hamburger -->
-    <button id="sidebarToggle" class="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-    
     <!-- Overlay -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.querySelector('aside');
