@@ -300,8 +300,11 @@ public function rekap(Request $request)
 {
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
-    $query = Absensi::with('pegawai')
-        ->where('tahun_pelajaran_id', $tahunAktif->id);
+$query = Absensi::with('pegawai')
+    ->where(function ($q) use ($tahunAktif) {
+        $q->where('tahun_pelajaran_id', $tahunAktif->id)
+          ->orWhereNull('tahun_pelajaran_id');
+    });
 
     if ($request->bulan) {
         $query->whereMonth('tanggal', $request->bulan);
@@ -334,7 +337,10 @@ public function cetak(Request $request)
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
     $query = Absensi::with('pegawai')
-        ->where('tahun_pelajaran_id', $tahunAktif->id);
+    ->where(function ($q) use ($tahunAktif) {
+        $q->where('tahun_pelajaran_id', $tahunAktif->id)
+          ->orWhereNull('tahun_pelajaran_id');
+    });
 
     if ($request->bulan) {
         $query->whereMonth('tanggal', $request->bulan);
