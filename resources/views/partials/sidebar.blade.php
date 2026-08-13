@@ -170,7 +170,7 @@ class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 t
     </nav>
 
     <!-- Footer -->
-    <div class="border-t border-white/10 p-4">
+    <div class="border-t border-white/10 p-4 relative z-50">
         <div class="bg-white/5 rounded-xl p-4 mb-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold">
