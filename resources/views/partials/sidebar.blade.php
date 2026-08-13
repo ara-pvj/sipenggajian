@@ -8,7 +8,7 @@
 
 <!-- Overlay -->
 <div id="sidebarOverlay" 
-     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity duration-300 lg:hidden">
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden transition-opacity duration-300 lg:hidden">
 </div>
 
 <!-- Sidebar -->
