@@ -72,20 +72,17 @@
             <div class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: {{ $persentase }}%;"></div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 text-center">
-            <div class="bg-green-50 rounded-xl p-3 border border-green-100">
-                <p class="text-2xl font-bold text-green-600">{{ $hadir ?? 0 }}</p>
-                <p class="text-xs text-gray-500">Hadir</p>
-            </div>
-            <div class="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
-                <p class="text-2xl font-bold text-yellow-600">{{ $belumHadir ?? 0 }}</p>
-                <p class="text-xs text-gray-500">Belum</p>
-            </div>
-            <div class="bg-red-50 rounded-xl p-3 border border-red-100">
-                <p class="text-2xl font-bold text-red-600">{{ $alpha ?? 0 }}</p>
-                <p class="text-xs text-gray-500">Alpha</p>
-            </div>
-        </div>
+        <div class="grid grid-cols-2 gap-3 text-center">
+    <div class="bg-green-50 rounded-xl p-3 border border-green-100">
+        <p class="text-2xl font-bold text-green-600">{{ $hadir ?? 0 }}</p>
+        <p class="text-xs text-gray-500">Hadir</p>
+    </div>
+
+    <div class="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
+        <p class="text-2xl font-bold text-yellow-600">{{ $belumHadir ?? 0 }}</p>
+        <p class="text-xs text-gray-500">Belum</p>
+    </div>
+</div>
     </div>
 </div>
 

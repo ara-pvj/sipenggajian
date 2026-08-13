@@ -22,23 +22,25 @@ class PenggajianController extends Controller
 {
     $filter = $request->filter ?? 'semua';
     $periode = $request->periode ?? now()->format('Y-m');
+
+    // Ambil tahun pelajaran yang sedang aktif
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
-    {
-        // ===== JIKA DATA BELUM ADA → TAMPILKAN MONITORING =====
-        $monitoring = true;
+    // Mode monitoring
+    $monitoring = true;
 
-$penggajianGuru = $this->getMonitoringGuru($periode);
+    // Jika belum ada data penggajian resmi,
+    // tampilkan monitoring berdasarkan absensi tahun pelajaran aktif
+    $penggajianGuru = $this->getMonitoringGuru($periode);
+    $penggajianStaff = $this->getMonitoringStaff($periode);
 
-$penggajianStaff = $this->getMonitoringStaff($periode);
-    }
-return view('penggajian.index', compact(
-    'penggajianGuru',
-    'penggajianStaff',
-    'periode',
-    'filter',
-    'monitoring'
-));
+    return view('penggajian.index', compact(
+        'penggajianGuru',
+        'penggajianStaff',
+        'periode',
+        'filter',
+        'monitoring'
+    ));
 }
 
 // ===== MONITORING GURU =====
@@ -47,6 +49,7 @@ private function getMonitoringGuru($periode)
     $bulan = date('m', strtotime($periode));
     $tahun = date('Y', strtotime($periode));
     $komponenMaster = MasterKomponenPenggajian::first();
+    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
     $guruList = Pegawai::with('jabatan')
         ->where('jenis_pegawai', 'guru')
@@ -56,10 +59,12 @@ private function getMonitoringGuru($periode)
 
     foreach ($guruList as $pegawai) {
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
-            ->whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-            ->whereIn('status', ['Hadir', 'Selesai'])
-            ->get();
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->whereMonth('tanggal', $bulan)
+    ->whereYear('tanggal', $tahun)
+    ->whereIn('status', ['Hadir', 'Selesai'])
+    ->get();
+    
 
         if ($absensi->isEmpty()) {
             continue;
@@ -102,16 +107,22 @@ private function getMonitoringStaff($periode)
     $bulan = date('m', strtotime($periode));
     $tahun = date('Y', strtotime($periode));
     $komponenMaster = MasterKomponenPenggajian::first();
+    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
     $staffList = Pegawai::where('jenis_pegawai', 'staff')->get();
     $data = collect();
 
     foreach ($staffList as $pegawai) {
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
-            ->whereMonth('tanggal', $bulan)
-            ->whereYear('tanggal', $tahun)
-            ->whereIn('status', ['Hadir', 'Selesai'])
-            ->get();
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->whereMonth('tanggal', $bulan)
+    ->whereYear('tanggal', $tahun)
+    ->whereIn('status', ['Hadir', 'Selesai'])
+    ->get();
+
+    if ($absensi->isEmpty()) {
+    continue;
+}
 
         $jumlahHadir = $absensi->count();
 
@@ -352,9 +363,10 @@ public function cetakLaporan(Request $request)
     foreach ($pegawaiList as $pegawai) {
         // Cek duplikasi
         $cek = Penggajian::where('pegawai_id', $pegawai->id)
-            ->whereMonth('periode', $bulan)
-            ->whereYear('periode', $tahun)
-            ->exists();
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->whereMonth('periode', $bulan)
+    ->whereYear('periode', $tahun)
+    ->exists();
 
         if ($cek) {
             continue;
@@ -362,6 +374,7 @@ public function cetakLaporan(Request $request)
 
         // Ambil absensi yang sudah SELESAI
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
     ->whereMonth('tanggal', $bulan)
     ->whereYear('tanggal', $tahun)
     ->where('status', 'Hadir')
@@ -406,7 +419,7 @@ if ($jumlahHadir == 0) {
        } else {
     // ===== STAFF =====
     // Gaji Pokok dari tabel pegawai (bukan dari master komponen)
-    $gajiPokok = $pegawai->gaji_pokok ?? 0;  // <-- AMBIL DARI PEGAWAI
+    $gajiPokok = $pegawai->gaji_pokok ?? 0; 
     
     // Transport = transport_staff × jumlah hadir
     $transport = ($komponenMaster->transport_staff ?? 5000) * $jumlahHadir;
@@ -417,7 +430,9 @@ if ($jumlahHadir == 0) {
 
         // ===== HITUNG JP WAJIB =====
         $jpWajib = 0;
-        $jadwal = JadwalMengajar::where('pegawai_id', $pegawai->id)->get();
+        $jadwal = JadwalMengajar::where('pegawai_id', $pegawai->id)
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->get();
         $jpWajib = $jadwal->sum('jumlah_jp') * 4; // Asumsi 4 minggu
 
         Penggajian::create([

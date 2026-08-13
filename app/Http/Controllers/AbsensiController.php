@@ -17,7 +17,10 @@ class AbsensiController extends Controller
      */
     public function index(Request $request)
 {
-    $query = Absensi::with('pegawai');
+    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+
+    $query = Absensi::with('pegawai')
+        ->where('tahun_pelajaran_id', $tahunAktif->id);
 
     // Filter tanggal
     if ($request->tanggal) {
@@ -171,15 +174,25 @@ $hari = ucfirst($hari);
         ], 422);
     }
 
-    // Simpan absensi untuk staff
-    Absensi::create([
-        'pegawai_id'   => $pegawai->id,
-        'tanggal'      => $tanggal,
-        'jam_masuk'    => Carbon::now('Asia/Jakarta')->format('H:i:s'),
-        'jam_mengajar' => 0,
-        'foto_masuk'   => $namaFoto,
-        'status'       => 'Hadir',
-    ]);
+    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+
+if (!$tahunAktif) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Belum ada Tahun Pelajaran yang aktif.'
+    ], 422);
+}
+
+// Simpan absensi untuk staff
+Absensi::create([
+    'pegawai_id'        => $pegawai->id,
+    'tahun_pelajaran_id' => $tahunAktif->id,
+    'tanggal'            => $request->tanggal,
+    'jam_masuk'          => now()->format('H:i:s'),
+    'jam_mengajar'       => 0,
+    'foto_masuk'         => $namaFoto,
+    'status'             => 'Hadir',
+]);
 
    $pesan = 'Absensi berhasil disimpan.';
 
@@ -300,11 +313,8 @@ public function rekap(Request $request)
 {
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
-$query = Absensi::with('pegawai')
-    ->where(function ($q) use ($tahunAktif) {
-        $q->where('tahun_pelajaran_id', $tahunAktif->id)
-          ->orWhereNull('tahun_pelajaran_id');
-    });
+    $query = Absensi::with('pegawai')
+        ->where('tahun_pelajaran_id', $tahunAktif->id);
 
     if ($request->bulan) {
         $query->whereMonth('tanggal', $request->bulan);
@@ -410,16 +420,20 @@ public function pilihSesi()
 
     $hari = $hariMap[$hari] ?? 'Senin';
 
-    $jadwalHariIni = JadwalMengajar::where('pegawai_id', $pegawai->id)
-        ->where('hari', $hari)
-        ->orderBy('jam_mulai')
-        ->get();
+    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+
+$jadwalHariIni = JadwalMengajar::where('pegawai_id', $pegawai->id)
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->where('hari', $hari)
+    ->orderBy('jam_mulai')
+    ->get();
 
     foreach ($jadwalHariIni as $jadwal) {
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
-            ->where('jadwal_mengajar_id', $jadwal->id)
-            ->whereDate('tanggal', $tanggalHariIni)
-            ->first();
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->where('jadwal_mengajar_id', $jadwal->id)
+    ->whereDate('tanggal', today())
+    ->first();
 
         if (!$absensi) {
             $jadwal->status_sesi = 'belum';

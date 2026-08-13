@@ -25,7 +25,10 @@ class DashboardController extends Controller
         $totalStaff = Pegawai::where('jenis_pegawai', 'staff')->count();
         
         // Total gaji semua
-        $totalGaji = Penggajian::sum('gaji_total');
+        $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+
+        $totalGaji = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
+        ->sum('gaji_total');
         
         // Informasi penting (ambil yang pertama)
         $informasi = Informasi::first();
@@ -38,13 +41,19 @@ class DashboardController extends Controller
         
         // 5 data penggajian terbaru
         $penggajianTerbaru = Penggajian::with('pegawai')
-            ->latest()
-            ->take(5)
-            ->get();
+        ->where('tahun_pelajaran_id', $tahunAktif?->id)
+        ->latest()
+        ->take(5)
+        ->get();
         
         // Status pembayaran
-        $sudahDibayar = Penggajian::where('status', 'Sudah Dibayar')->count();
-        $belumDibayar = Penggajian::where('status', 'Belum Dibayar')->count();
+        $sudahDibayar = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
+            ->where('status', 'Sudah Dibayar')
+            ->count();
+
+        $belumDibayar = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
+            ->where('status', 'Belum Dibayar')
+            ->count();
 
         // Kirim semua data ke view
         return view('dashboard.bendahara', compact(
@@ -166,18 +175,23 @@ return back()->with('success', 'Informasi penting berhasil diperbarui!');
 
     $today = now()->toDateString();
 
-    $hadir = Absensi::whereDate('tanggal', $today)
-        ->where('status', 'Hadir')
-        ->count();
-    
-        $belumHadir = $totalGuru - $hadir;
+$hadir = Absensi::whereDate('tanggal', $today)
+    ->where('tahun_pelajaran_id', $tahunAktif?->id)
+    ->where('status', 'Hadir')
+    ->distinct('pegawai_id')
+    ->count('pegawai_id');
 
-    $totalPenggajian = Penggajian::sum('gaji_total');
+$belumHadir = $totalPegawai - $hadir;
 
-$sudahDibayar = Penggajian::where('status', 'Sudah Dibayar')
+    $totalPenggajian = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
     ->sum('gaji_total');
 
-$belumDibayar = Penggajian::where('status', 'Belum Dibayar')
+    $sudahDibayar = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
+    ->where('status', 'Sudah Dibayar')
+    ->sum('gaji_total');
+
+    $belumDibayar = Penggajian::where('tahun_pelajaran_id', $tahunAktif?->id)
+    ->where('status', 'Belum Dibayar')
     ->sum('gaji_total');
 
     return view('dashboard.kepala', compact(
