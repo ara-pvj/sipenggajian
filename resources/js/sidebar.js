@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!sidebar) return;
 
     function openSidebar() {
-        sidebar.classList.remove('-translate-x-full');
-        sidebar.classList.add('translate-x-0');
+        sidebar.style.transform = 'translateX(0)';
 
         if (overlay) {
             overlay.classList.remove('hidden');
@@ -16,65 +15,60 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeSidebar() {
-        sidebar.classList.remove('translate-x-0');
-        sidebar.classList.add('-translate-x-full');
+        sidebar.style.transform = 'translateX(-100%)';
 
         if (overlay) {
             overlay.classList.add('hidden');
         }
     }
 
+    // Kondisi awal
+    if (window.innerWidth >= 1024) {
+        openSidebar();
+    } else {
+        closeSidebar();
+    }
+
     // Hamburger
     if (toggleBtn) {
-        toggleBtn.addEventListener('click', function () {
-            if (sidebar.classList.contains('-translate-x-full')) {
-                openSidebar();
-            } else {
-                closeSidebar();
+        toggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (window.innerWidth < 1024) {
+                const isOpen = sidebar.style.transform === 'translateX(0px)' ||
+                               sidebar.style.transform === 'translateX(0)';
+
+                if (isOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
             }
         });
     }
 
     // Tombol X
     if (closeBtn) {
-        closeBtn.addEventListener('click', function () {
+        closeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
             closeSidebar();
         });
     }
 
-    // Klik area luar sidebar
+    // Klik overlay
     if (overlay) {
         overlay.addEventListener('click', function () {
             closeSidebar();
         });
     }
 
-    // Kondisi awal
-    if (window.innerWidth >= 1024) {
-        sidebar.classList.remove('-translate-x-full');
-        sidebar.classList.add('translate-x-0');
-
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-    } else {
-        sidebar.classList.add('-translate-x-full');
-        sidebar.classList.remove('translate-x-0');
-
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-    }
-
-    // Saat resize
+    // Resize
     window.addEventListener('resize', function () {
         if (window.innerWidth >= 1024) {
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.add('translate-x-0');
-
-            if (overlay) {
-                overlay.classList.add('hidden');
-            }
+            openSidebar();
         } else {
             closeSidebar();
         }

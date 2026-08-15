@@ -13,8 +13,7 @@
 
 <!-- Sidebar -->
 <aside id="sidebar" 
-       class="fixed z-40 w-[288px] h-screen bg-gradient-to-b from-blue-800 via-blue-700 to-blue-600 text-white flex flex-col transition-all duration-300 ease-in-out shadow-2xl
-              -translate-x-full lg:translate-x-0">
+       class="fixed z-50 w-[288px] h-screen bg-gradient-to-b from-blue-800 via-blue-700 to-blue-600 text-white flex flex-col transition-transform duration-300 ease-in-out shadow-2xl">
     
     <!-- Tombol Close -->
     <button id="closeSidebar" 
