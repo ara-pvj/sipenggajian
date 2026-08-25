@@ -103,7 +103,7 @@ class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 t
 
     @endif
 
-        @if($role == 'guru')
+        @if(in_array($role, ['guru', 'staff']))
 
 <a href="{{ route('dashboard.guru') }}"
 class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 {{ request()->routeIs('dashboard.guru') ? 'bg-white/20 shadow-lg' : '' }}">

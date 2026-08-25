@@ -46,6 +46,10 @@ class AuthenticatedSessionController extends Controller
         return redirect()->route('dashboard.guru');
     }
 
+    if ($user->role == 'staff') {
+        return redirect()->route('dashboard.guru');
+    }
+
     if ($user->role == 'kepala_sekolah') {
         return redirect()->route('dashboard.kepala');
     }

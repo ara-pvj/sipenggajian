@@ -42,18 +42,39 @@
 
 <!-- Absensi & Kehadiran -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <!-- Scan Wajah -->
-<a href="{{ route('absensi.kamera') }}" 
-   class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white hover:shadow-lg transition shadow-md flex items-center justify-between">
-    <div>
-        <p class="text-blue-100 text-sm">Absensi Hari Ini</p>
-        <p class="text-xl font-bold mt-1">Scan Wajah</p>
-        <p class="text-blue-100 text-sm mt-1">Klik untuk melakukan absensi.</p>
+   <!-- Absensi Hari Ini -->
+@if($sudahAbsen)
+
+    <div class="bg-green-50 rounded-xl p-6 border border-green-200 shadow-sm flex items-center justify-between">
+        <div>
+            <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+            <p class="text-xl font-bold mt-1 text-green-700">Sudah Absen</p>
+            <p class="text-sm text-gray-500 mt-1">
+                Absensi hari ini sudah berhasil dilakukan.
+            </p>
+        </div>
+
+        <div class="text-green-600 text-3xl font-bold">
+            ✓
+        </div>
     </div>
-    <div class="text-4xl font-light">
-        →
-    </div>
-</a>
+
+@else
+
+    <a href="{{ route('absensi.kamera') }}"
+       class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white hover:shadow-lg transition shadow-md flex items-center justify-between">
+        <div>
+            <p class="text-blue-100 text-sm">Absensi Hari Ini</p>
+            <p class="text-xl font-bold mt-1">Scan Wajah</p>
+            <p class="text-blue-100 text-sm mt-1">Klik untuk melakukan absensi.</p>
+        </div>
+
+        <div class="text-4xl font-light">
+            →
+        </div>
+    </a>
+
+@endif
 
     <!-- Rekap Kehadiran -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

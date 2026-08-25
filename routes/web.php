@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
     // =========================
     // GURU
     // =========================
-    Route::middleware('role:guru')->group(function () {
+    Route::middleware('role:guru,staff')->group(function () {
 
         Route::get('/dashboard/guru',
             [DashboardController::class, 'guru'])

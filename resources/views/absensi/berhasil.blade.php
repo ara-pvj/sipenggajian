@@ -155,20 +155,28 @@
 
     <div class="mt-8">
 
-        <a href="{{ 
-            Auth::user()->role == 'guru' ? route('dashboard.guru') :
-            (Auth::user()->role == 'tata_usaha' ? route('dashboard.tatausaha') :
-            (Auth::user()->role == 'bendahara' ? route('dashboard.bendahara') :
-            (Auth::user()->role == 'kurikulum' ? route('dashboard.kurikulum') :
-            route('dashboard.kepala'))))
-        }}"
-        class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition">
+    @php
+        if (Auth::user()->role == 'guru' || Auth::user()->role == 'staff') {
+            $dashboardRoute = 'dashboard.guru';
+        } elseif (Auth::user()->role == 'tata_usaha') {
+            $dashboardRoute = 'dashboard.tatausaha';
+        } elseif (Auth::user()->role == 'bendahara') {
+            $dashboardRoute = 'dashboard.bendahara';
+        } elseif (Auth::user()->role == 'kurikulum') {
+            $dashboardRoute = 'dashboard.kurikulum';
+        } else {
+            $dashboardRoute = 'dashboard.kepala';
+        }
+    @endphp
 
-            Kembali ke Dashboard
+    <a href="{{ route($dashboardRoute) }}"
+       class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition">
 
-        </a>
+        Kembali ke Dashboard
 
-    </div>
+    </a>
+
+</div>
 
 </div>
 

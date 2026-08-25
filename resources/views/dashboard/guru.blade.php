@@ -24,7 +24,12 @@
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
     <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
         <p class="text-2xl font-bold text-blue-700">{{ $jadwalHariIni ?? 0 }}</p>
-        <p class="text-sm text-gray-600">Sesi Mengajar Hari Ini</p>
+
+@if(auth()->user()->role == 'staff')
+    <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+@else
+    <p class="text-sm text-gray-600">Sesi Mengajar Hari Ini</p>
+@endif
     </div>
     <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
         <p class="text-2xl font-bold text-green-700">{{ $sesiSelesai ?? 0 }}</p>
@@ -37,22 +42,75 @@
 </div>
 
 <!-- Absensi -->
-<a href="{{ route('absensi.pilihSesi') }}" 
-   class="block bg-white rounded-lg border border-gray-200 p-4 mb-5 hover:bg-gray-50 transition">
-    <div class="flex items-center justify-between">
-        <div>
-            <p class="text-sm text-gray-600">Absensi Hari Ini</p>
-            @if($belumSelesai > 0)
-                <p class="font-semibold text-blue-700">Lanjutkan Absensi</p>
-                <p class="text-sm text-gray-500">Masih ada {{ $belumSelesai }} sesi yang belum selesai.</p>
-            @else
-                <p class="font-semibold text-green-700">Semua Selesai</p>
-                <p class="text-sm text-gray-500">Seluruh sesi hari ini telah diabsen.</p>
-            @endif
+<!-- Absensi -->
+@if(auth()->user()->role == 'staff')
+
+    @if($sesiSelesai > 0)
+
+        <div class="block bg-green-50 rounded-lg border border-green-200 p-4 mb-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+                    <p class="font-semibold text-green-700">Sudah Absen</p>
+                    <p class="text-sm text-gray-500">
+                        Absensi hari ini sudah berhasil dilakukan.
+                    </p>
+                </div>
+
+                <div class="text-green-600 text-xl font-bold">
+                    ✓
+                </div>
+            </div>
         </div>
-        <div class="text-gray-400">→</div>
-    </div>
-</a>
+
+    @else
+
+        <a href="{{ route('absensi.kamera') }}"
+           class="block bg-white rounded-lg border border-gray-200 p-4 mb-5 hover:bg-gray-50 transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+                    <p class="font-semibold text-blue-700">Scan Wajah</p>
+                    <p class="text-sm text-gray-500">
+                        Klik untuk melakukan absensi hari ini.
+                    </p>
+                </div>
+
+                <div class="text-gray-400">
+                    →
+                </div>
+            </div>
+        </a>
+
+    @endif
+
+@else
+
+    {{-- KODE GURU LAMA, JANGAN DIUBAH --}}
+    <a href="{{ route('absensi.pilihSesi') }}"
+       class="block bg-white rounded-lg border border-gray-200 p-4 mb-5 hover:bg-gray-50 transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600">Absensi Hari Ini</p>
+
+                @if($belumSelesai > 0)
+                    <p class="font-semibold text-blue-700">Lanjutkan Absensi</p>
+                    <p class="text-sm text-gray-500">
+                        Masih ada {{ $belumSelesai }} sesi yang belum selesai.
+                    </p>
+                @else
+                    <p class="font-semibold text-green-700">Semua Selesai</p>
+                    <p class="text-sm text-gray-500">
+                        Seluruh sesi hari ini telah diabsen.
+                    </p>
+                @endif
+            </div>
+
+            <div class="text-gray-400">→</div>
+        </div>
+    </a>
+
+@endif
 
 <!-- Informasi -->
 <div class="bg-blue-50 rounded-lg border border-blue-200 p-4 mb-5">
@@ -87,58 +145,135 @@
 </div>
 
 <!-- Progress & Slip Gaji -->
+
+@if(auth()->user()->role == 'staff')
+
+<!-- Slip Gaji Staff -->
+<div class="bg-white rounded-lg border border-gray-200 p-4">
+    <h4 class="font-semibold text-gray-800 mb-3">Slip Gaji Terbaru</h4>
+
+    @if($slip)
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between border-b border-gray-100 pb-2">
+                <span class="text-gray-600">Periode</span>
+                <span class="font-medium">
+                    {{ \Carbon\Carbon::parse($slip->periode)->translatedFormat('F Y') }}
+                </span>
+            </div>
+
+            <div class="flex justify-between border-b border-gray-100 pb-2">
+                <span class="text-gray-600">Total Gaji</span>
+                <span class="font-bold text-green-700">
+                    Rp {{ number_format($slip->gaji_total, 0, ',', '.') }}
+                </span>
+            </div>
+
+            <div class="flex justify-between">
+                <span class="text-gray-600">Status</span>
+                <span class="px-3 py-0.5 rounded-full text-xs font-medium
+                    {{ $slip->status == 'Sudah Dibayar' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                    {{ $slip->status ?? 'Belum Dibayar' }}
+                </span>
+            </div>
+        </div>
+
+        <a href="{{ route('slip.saya') }}"
+           class="block text-center mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm transition">
+            Lihat Detail Slip
+        </a>
+    @else
+        <p class="text-center text-gray-500 py-6 text-sm">
+            Belum ada slip gaji.
+        </p>
+    @endif
+</div>
+
+@else
+
+<!-- Dashboard Guru -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
     <!-- Progress -->
     <div class="bg-white rounded-lg border border-gray-200 p-4">
         <h4 class="font-semibold text-gray-800 mb-3">Progress Kehadiran</h4>
+
         <div class="flex justify-between text-sm mb-1">
             <span class="text-gray-600">Selesai</span>
             <span class="font-semibold">{{ $persentase ?? 0 }}%</span>
         </div>
+
         <div class="w-full bg-gray-200 rounded-full h-2.5">
-            <div class="bg-blue-700 h-2.5 rounded-full" style="width: {{ $persentase ?? 0 }}%"></div>
+            <div class="bg-blue-700 h-2.5 rounded-full"
+                 style="width: {{ $persentase ?? 0 }}%">
+            </div>
         </div>
+
         <div class="grid grid-cols-2 gap-4 mt-4">
+
             <div class="bg-green-50 rounded-lg p-3 text-center border border-green-200">
-                <p class="text-xl font-bold text-green-700">{{ $sesiSelesai ?? 0 }}</p>
+                <p class="text-xl font-bold text-green-700">
+                    {{ $sesiSelesai ?? 0 }}
+                </p>
                 <p class="text-xs text-gray-600">Selesai</p>
             </div>
+
             <div class="bg-red-50 rounded-lg p-3 text-center border border-red-200">
-                <p class="text-xl font-bold text-red-600">{{ $belumSelesai ?? 0 }}</p>
+                <p class="text-xl font-bold text-red-600">
+                    {{ $belumSelesai ?? 0 }}
+                </p>
                 <p class="text-xs text-gray-600">Sisa</p>
             </div>
+
         </div>
     </div>
 
     <!-- Slip Gaji -->
     <div class="bg-white rounded-lg border border-gray-200 p-4">
         <h4 class="font-semibold text-gray-800 mb-3">Slip Gaji Terbaru</h4>
+
         @if($slip)
             <div class="space-y-2 text-sm">
+
                 <div class="flex justify-between border-b border-gray-100 pb-2">
                     <span class="text-gray-600">Periode</span>
-                    <span class="font-medium">{{ \Carbon\Carbon::parse($slip->periode)->translatedFormat('F Y') }}</span>
+                    <span class="font-medium">
+                        {{ \Carbon\Carbon::parse($slip->periode)->translatedFormat('F Y') }}
+                    </span>
                 </div>
+
                 <div class="flex justify-between border-b border-gray-100 pb-2">
                     <span class="text-gray-600">Total Gaji</span>
-                    <span class="font-bold text-green-700">Rp {{ number_format($slip->gaji_total, 0, ',', '.') }}</span>
+                    <span class="font-bold text-green-700">
+                        Rp {{ number_format($slip->gaji_total, 0, ',', '.') }}
+                    </span>
                 </div>
+
                 <div class="flex justify-between">
                     <span class="text-gray-600">Status</span>
-                    <span class="px-3 py-0.5 rounded-full text-xs font-medium 
+                    <span class="px-3 py-0.5 rounded-full text-xs font-medium
                         {{ $slip->status == 'Sudah Dibayar' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
                         {{ $slip->status ?? 'Belum Dibayar' }}
                     </span>
                 </div>
+
             </div>
-            <a href="{{ route('slip.saya') }}" class="block text-center mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm transition">
+
+            <a href="{{ route('slip.saya') }}"
+               class="block text-center mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm transition">
                 Lihat Detail Slip
             </a>
+
         @else
-            <p class="text-center text-gray-500 py-6 text-sm">Belum ada slip gaji.</p>
+            <p class="text-center text-gray-500 py-6 text-sm">
+                Belum ada slip gaji.
+            </p>
         @endif
     </div>
+
 </div>
+
+@endif
+
 
 <script>
 function toggleEdit() {

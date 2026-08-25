@@ -123,6 +123,41 @@ return back()->with('success', 'Informasi penting berhasil diperbarui!');
 {
     $pegawai = auth()->user()->pegawai;
 
+    // KHUSUS STAFF
+    if ($pegawai->jenis_pegawai == 'staff') {
+
+        $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+
+        // Staff hanya melakukan absensi 1 kali sehari
+        $jadwalHariIni = 1;
+
+        $sesiSelesai = Absensi::where('pegawai_id', $pegawai->id)
+            ->whereDate('tanggal', today())
+            ->count();
+
+        $belumSelesai = $sesiSelesai > 0 ? 0 : 1;
+
+        $persentase = $sesiSelesai > 0 ? 100 : 0;
+
+        $slip = Penggajian::where('pegawai_id', $pegawai->id)
+            ->latest('periode')
+            ->first();
+
+        $informasi = Informasi::first();
+
+        return view('dashboard.guru', compact(
+            'pegawai',
+            'tahunAktif',
+            'jadwalHariIni',
+            'sesiSelesai',
+            'belumSelesai',
+            'persentase',
+            'slip',
+            'informasi'
+        ));
+    }
+
+    // KODE GURU LAMA - JANGAN DIUBAH
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
     $jadwalHariIni = JadwalMengajar::where('pegawai_id', $pegawai->id)
@@ -175,6 +210,10 @@ return back()->with('success', 'Informasi penting berhasil diperbarui!');
 
     $today = now()->toDateString();
 
+    $sudahAbsen = Absensi::where('pegawai_id', $pegawai->id)
+    ->whereDate('tanggal', $today)
+    ->exists();
+
 $hadir = Absensi::whereDate('tanggal', $today)
     ->where('tahun_pelajaran_id', $tahunAktif?->id)
     ->where('status', 'Hadir')
@@ -205,7 +244,8 @@ $belumHadir = $totalPegawai - $hadir;
         'totalPenggajian',
         'sudahDibayar',
         'belumDibayar',
-        'informasi'
+        'informasi',
+        'sudahAbsen'
     ));
 }
 

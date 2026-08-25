@@ -292,6 +292,23 @@ public function updatePulang(Request $request, $id)
 
 public function kamera()
 {
+    $user = Auth::user();
+    $pegawai = Pegawai::findOrFail($user->pegawai_id);
+
+    // Khusus staff: hanya boleh absen 1 kali dalam sehari
+    if ($pegawai->jenis_pegawai == 'staff') {
+
+        $sudahAbsen = Absensi::where('pegawai_id', $pegawai->id)
+            ->whereDate('tanggal', Carbon::now('Asia/Jakarta')->toDateString())
+            ->exists();
+
+        if ($sudahAbsen) {
+            return redirect()
+                ->route('dashboard.guru')
+                ->with('error', 'Anda sudah melakukan absensi hari ini.');
+        }
+    }
+
     return view('absensi.kamera');
 }
 
