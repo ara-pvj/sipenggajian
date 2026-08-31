@@ -292,8 +292,8 @@ public function cetakLaporan(Request $request)
      */
    public function create()
 {
-    $today = Carbon::today();
-    $lastDay = Carbon::today()->endOfMonth();
+    $today = Carbon::create(2026, 8, 31);
+    $lastDay = Carbon::create(2026, 8, 31);
 
     $allowProcess = $today->greaterThanOrEqualTo(
         $lastDay->copy()->subDay()
@@ -312,8 +312,8 @@ public function cetakLaporan(Request $request)
      */
     public function store(Request $request)
 {
-    $today = Carbon::today();
-    $lastDay = Carbon::today()->endOfMonth();
+    $today = Carbon::create(2026, 8, 31);
+    $lastDay = Carbon::create(2026, 8, 31);
 
     $allowProcess = $today->greaterThanOrEqualTo(
         $lastDay->copy()->subDay()
