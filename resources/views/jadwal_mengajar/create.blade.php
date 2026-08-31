@@ -105,24 +105,8 @@
 
 <td>
 
-<select name="mata_pelajaran[]" class="w-full border rounded">
-
-<option value="">Pilih Mapel</option>
-
-<option>PAI</option>
-<option>PKN</option>
-<option>Bahasa Indonesia</option>
-<option>Bahasa Inggris</option>
-<option>Matematika</option>
-<option>IPA</option>
-<option>IPS</option>
-<option>Informatika</option>
-<option>Seni Budaya</option>
-<option>PJOK</option>
-<option>Bahasa Arab</option>
-<option>Bahasa Sunda</option>
-<option>BTQ</option>
-
+<select name="mata_pelajaran[]" class="w-full border rounded mapel-select" required>
+    <option value="">Pilih Mapel</option>
 </select>
 
 </td>
@@ -198,6 +182,38 @@ class="mt-4 bg-green-600 text-white px-5 py-2 rounded">
 
 <script>
 
+const guruMapel = @json(
+    $guru->mapWithKeys(function ($guru) {
+        return [
+            $guru->id => $guru->mataPelajaran->pluck('nama')->values()
+        ];
+    })
+);
+
+const guruSelect = document.querySelector('select[name="pegawai_id"]');
+
+function loadMapel(selectMapel) {
+    const guruId = guruSelect.value;
+
+    selectMapel.innerHTML = '<option value="">Pilih Mapel</option>';
+
+    if (guruId && guruMapel[guruId]) {
+        guruMapel[guruId].forEach(function (mapel) {
+            selectMapel.innerHTML += `
+                <option value="${mapel}">
+                    ${mapel}
+                </option>
+            `;
+        });
+    }
+}
+
+guruSelect.addEventListener('change', function () {
+    document.querySelectorAll('.mapel-select').forEach(function (select) {
+        loadMapel(select);
+    });
+});
+
 function tambahBaris(){
 
     let tbody = document.querySelector("#jadwalTable tbody");
@@ -209,9 +225,14 @@ function tambahBaris(){
     });
 
     row.querySelectorAll("select").forEach(select => {
-        select.selectedIndex = 0;
-    });
+    select.selectedIndex = 0;
+});
 
+let mapelBaru = row.querySelector('.mapel-select');
+
+if (guruSelect.value) {
+    loadMapel(mapelBaru);
+}
     tbody.appendChild(row);
 
 }

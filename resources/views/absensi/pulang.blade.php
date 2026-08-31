@@ -48,7 +48,7 @@
         <div class="mb-6">
 
             <label class="block mb-2 font-semibold">
-                Upload Foto Pulang
+                Upload Foto Selesai
             </label>
 
             <input

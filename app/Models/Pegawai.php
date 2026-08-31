@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\JadwalMengajar;
+use App\Models\MataPelajaran;
+use App\Models\User;
 
 class Pegawai extends Model
 {
@@ -42,6 +44,21 @@ public function penggajian()
 public function jadwalMengajar()
 {
     return $this->hasMany(JadwalMengajar::class);
+}
+
+public function mataPelajaran()
+{
+    return $this->belongsToMany(
+        MataPelajaran::class,
+        'pegawai_mata_pelajaran',
+        'pegawai_id',
+        'mata_pelajaran_id'
+    );
+}
+
+public function user()
+{
+    return $this->hasOne(User::class, 'pegawai_id');
 }
 
 }

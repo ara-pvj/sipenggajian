@@ -109,14 +109,42 @@ $hari = ucfirst($hari);
             ], 422);
         }
 
-        $jadwal = JadwalMengajar::find(session('jadwal_id'));
+        $jadwal = JadwalMengajar::where('id', session('jadwal_id'))
+    ->where('pegawai_id', $pegawai->id)
+    ->where('tahun_pelajaran_id', $tahunAktif->id)
+    ->first();
 
-        if (!$jadwal) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Silakan pilih sesi mengajar terlebih dahulu.'
-            ], 422);
-        }
+if (!$jadwal) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Jadwal mengajar tidak ditemukan atau bukan jadwal Anda.'
+    ], 422);
+}
+
+// Cek apakah hari sesuai dengan jadwal
+if ($jadwal->hari != $hari) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Anda tidak dapat melakukan absensi karena hari tidak sesuai dengan jadwal mengajar.'
+    ], 422);
+}
+
+// Cek apakah waktu sekarang berada dalam jadwal mengajar
+$jamSekarang = Carbon::now('Asia/Jakarta')->format('H:i:s');
+
+if (
+    $jamSekarang < $jadwal->jam_mulai ||
+    $jamSekarang > $jadwal->jam_selesai
+) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Anda hanya dapat melakukan absensi pada jam mengajar '
+            . Carbon::parse($jadwal->jam_mulai)->format('H:i')
+            . ' - '
+            . Carbon::parse($jadwal->jam_selesai)->format('H:i')
+            . '.'
+    ], 422);
+}
 
         $absensi = Absensi::where('pegawai_id', $pegawai->id)
     ->where('jadwal_mengajar_id', $jadwal->id)
@@ -162,19 +190,17 @@ $hari = ucfirst($hari);
         ]);
     }
 
-    // ===== STAFF / NON-GURU =====
-    $cekAbsensi = Absensi::where('pegawai_id', $pegawai->id)
+   // ===== STAFF / NON-GURU =====
+$cekAbsensi = Absensi::where('pegawai_id', $pegawai->id)
     ->whereDate('tanggal', $tanggal)
     ->first();
 
-    if ($cekAbsensi) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Anda sudah melakukan absensi hari ini.'
-        ], 422);
-    }
-
-    $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
+if ($cekAbsensi) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Anda sudah melakukan absensi hari ini.'
+    ], 422);
+}
 
 if (!$tahunAktif) {
     return response()->json([
@@ -183,24 +209,42 @@ if (!$tahunAktif) {
     ], 422);
 }
 
-// Simpan absensi untuk staff
+// Staff hanya dapat melakukan absensi pulang
+// pada pukul 11.30 - 13.00 WIB
+$jamSekarang = Carbon::now('Asia/Jakarta');
+
+$mulaiAbsen = Carbon::today('Asia/Jakarta')->setTime(11, 30, 0);
+$batasAbsen = Carbon::today('Asia/Jakarta')->setTime(13, 0, 0);
+
+if ($jamSekarang->lt($mulaiAbsen)) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Absensi pulang belum dibuka. Absensi dapat dilakukan mulai pukul 11.30 WIB.'
+    ], 422);
+}
+
+if ($jamSekarang->gt($batasAbsen)) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Waktu absensi pulang sudah berakhir. Absensi hanya dapat dilakukan sampai pukul 13.00 WIB.'
+    ], 422);
+}
+
 Absensi::create([
-    'pegawai_id'        => $pegawai->id,
+    'pegawai_id'         => $pegawai->id,
     'tahun_pelajaran_id' => $tahunAktif->id,
-    'tanggal'            => $request->tanggal,
-    'jam_masuk'          => now()->format('H:i:s'),
+    'tanggal'            => $tanggal,
+    'jam_pulang'         => $jamSekarang->format('H:i:s'),
     'jam_mengajar'       => 0,
-    'foto_masuk'         => $namaFoto,
-    'status'             => 'Hadir',
+    'foto_pulang'        => $namaFoto,
+    'status'              => 'Hadir',
 ]);
 
-   $pesan = 'Absensi berhasil disimpan.';
-
-session(['jenis_absensi' => 'staff']);
+session(['jenis_absensi' => 'pulang']);
 
 return response()->json([
     'success' => true,
-    'message' => $pesan
+    'message' => 'Absensi pulang berhasil.'
 ]);
 }
 
@@ -333,29 +377,91 @@ public function rekap(Request $request)
     $query = Absensi::with('pegawai')
         ->where('tahun_pelajaran_id', $tahunAktif->id);
 
-    if ($request->bulan) {
-        $query->whereMonth('tanggal', $request->bulan);
-    }
+    // Bulan yang dipilih untuk rekap
+    $bulan = $request->bulan ?: now()->month;
+    $tahun = $request->tahun ?: now()->year;
+
+    $query->whereMonth('tanggal', $bulan)
+        ->whereYear('tanggal', $tahun);
 
     $absensi = $query->get();
 
     $data = $absensi
         ->groupBy('pegawai_id')
-        ->map(function ($items) {
+        ->map(function ($items) use ($bulan, $tahun, $tahunAktif) {
 
             $pegawai = $items->first()->pegawai;
+
+            // Total kehadiran
+            $jumlahHadir = $items->count();
+
+            // Total JP yang benar-benar direalisasikan
+            $totalJP = $items->sum('jam_mengajar');
+
+            // Default untuk staff
+            $jpJadwalMinggu = 0;
+            $jpJadwalBulan = 0;
+            $persentase = null;
+
+            // ==========================================
+            // KHUSUS GURU
+            // ==========================================
+            if ($pegawai->jenis_pegawai == 'guru') {
+
+                $jadwal = JadwalMengajar::where('pegawai_id', $pegawai->id)
+                    ->where('tahun_pelajaran_id', $tahunAktif->id)
+                    ->get();
+
+                // Total JP berdasarkan jadwal dalam 1 minggu
+                $jpJadwalMinggu = $jadwal->sum('jumlah_jp');
+
+                // Hitung berapa kali setiap jadwal muncul
+                // selama bulan yang dipilih
+                foreach ($jadwal as $itemJadwal) {
+
+                    $tanggal = Carbon::create($tahun, $bulan, 1);
+
+                    while ($tanggal->month == $bulan) {
+
+                        $hari = ucfirst(
+                            $tanggal->locale('id')->dayName
+                        );
+
+                        if ($hari == $itemJadwal->hari) {
+                            $jpJadwalBulan += $itemJadwal->jumlah_jp;
+                        }
+
+                        $tanggal->addDay();
+                    }
+                }
+
+                // Persentase realisasi terhadap jadwal
+                if ($jpJadwalBulan > 0) {
+                    $persentase = round(
+                        ($totalJP / $jpJadwalBulan) * 100,
+                        1
+                    );
+                }
+            }
 
             return (object)[
                 'pegawai' => $pegawai,
                 'jenis' => $pegawai->jenis_pegawai,
-                'jumlah_hadir' => $items->count(),
-                'total_jp' => $items->sum('jam_mengajar'),
+                'jumlah_hadir' => $jumlahHadir,
+                'total_jp' => $totalJP,
+
+                // Data tambahan untuk perbandingan
+                'jp_jadwal_minggu' => $jpJadwalMinggu,
+                'jp_jadwal_bulan' => $jpJadwalBulan,
+                'persentase' => $persentase,
             ];
         });
 
     return view('absensi.rekap', compact(
         'data',
-        'tahunAktif'
+        'tahunAktif',
+        'bulan',
+        'tahun'
     ));
 }
 
@@ -469,8 +575,44 @@ public function prosesSesi(Request $request)
         'jadwal_id' => 'required|exists:jadwal_mengajars,id',
     ]);
 
+    $pegawai = auth()->user()->pegawai;
+
+    $jadwal = JadwalMengajar::where('id', $request->jadwal_id)
+        ->where('pegawai_id', $pegawai->id)
+        ->first();
+
+    if (!$jadwal) {
+        return back()->with('error', 'Jadwal mengajar tidak ditemukan.');
+    }
+
+    $sekarang = Carbon::now('Asia/Jakarta');
+
+    $jamMulai = Carbon::parse($jadwal->jam_mulai, 'Asia/Jakarta');
+    $jamSelesai = Carbon::parse($jadwal->jam_selesai, 'Asia/Jakarta');
+
+    $jamMulai->setDate(
+        $sekarang->year,
+        $sekarang->month,
+        $sekarang->day
+    );
+
+    $jamSelesai->setDate(
+        $sekarang->year,
+        $sekarang->month,
+        $sekarang->day
+    );
+
+    if ($sekarang->lt($jamMulai) || $sekarang->gt($jamSelesai)) {
+        return back()->with(
+            'error',
+            'Absensi hanya dapat dilakukan pada jam mengajar ' .
+            $jamMulai->format('H:i') . ' - ' .
+            $jamSelesai->format('H:i') . '.'
+        );
+    }
+
     session([
-        'jadwal_id' => $request->jadwal_id
+        'jadwal_id' => $jadwal->id
     ]);
 
     return redirect()->route('absensi.kamera');

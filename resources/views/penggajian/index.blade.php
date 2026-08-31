@@ -220,13 +220,13 @@
 @elseif($item->status == 'Belum Dibayar')
 
     <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
-        Pending
+        Belum Dibayar
     </span>
 
 @else
 
     <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
-        Dibayar
+        Sudah Dibayar
     </span>
 
 @endif
@@ -241,12 +241,11 @@
 
 @elseif($item->status == 'Belum Dibayar')
 
-    <form action="{{ route('penggajian.bayar',$item->id) }}" method="POST">
-        @csrf
-        <button class="...">
-            Bayar
-        </button>
-    </form>
+    <button type="button"
+    onclick="openBayarModal({{ $item->id }}, '{{ $item->pegawai->nama }}')"
+    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">
+    Bayar
+</button>
 
 @else
 
@@ -347,13 +346,13 @@
 @elseif($item->status == 'Belum Dibayar')
 
     <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-semibold">
-        Pending
+        Belum Dibayar
     </span>
 
 @else
 
     <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
-        Dibayar
+        Sudah Dibayar
     </span>
 
 @endif
@@ -368,12 +367,11 @@
 
 @elseif($item->status == 'Belum Dibayar')
 
-<form action="{{ route('penggajian.bayar',$item->id) }}" method="POST">
-    @csrf
-    <button class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-        Bayar
-    </button>
-</form>
+<button type="button"
+    onclick="openBayarModal({{ $item->id }}, '{{ $item->pegawai->nama }}')"
+    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">
+    Bayar
+</button>
 
 @else
 
@@ -405,5 +403,100 @@
 
 </div>
 @endif
+
+@endsection
+
+@endif
+
+
+<!-- Modal Konfirmasi Pembayaran -->
+<div id="bayarModal"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+
+        <div class="bg-gradient-to-r from-blue-700 to-blue-500 px-6 py-5 text-white">
+            <h3 class="text-xl font-bold">
+                Konfirmasi Pembayaran
+            </h3>
+
+            <p class="text-blue-100 text-sm mt-1">
+                Pastikan pembayaran gaji sudah dilakukan.
+            </p>
+        </div>
+
+        <div class="p-6">
+
+            <div class="bg-blue-50 rounded-xl p-4 mb-5">
+                <p class="text-sm text-gray-500">
+                    Pegawai
+                </p>
+
+                <p id="namaPegawaiBayar"
+                    class="font-bold text-gray-800 text-lg">
+                </p>
+            </div>
+
+            <p class="text-gray-600 text-sm leading-relaxed">
+                Apakah gaji pegawai ini sudah benar-benar dibayarkan?
+                Setelah dikonfirmasi, status akan berubah menjadi
+                <span class="font-semibold text-green-600">
+                    Sudah Dibayar
+                </span>.
+            </p>
+
+        </div>
+
+        <div class="px-6 pb-6 flex justify-end gap-3">
+
+            <button type="button"
+                onclick="closeBayarModal()"
+                class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold">
+                Batal
+            </button>
+
+            <form id="formBayar" method="POST">
+                @csrf
+                @method('PUT')
+
+                <button type="submit"
+                    class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+                    Bayar Sekarang
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function openBayarModal(id, nama)
+{
+    document.getElementById('namaPegawaiBayar').textContent = nama;
+
+    document.getElementById('formBayar').action =
+        '/penggajian/' + id + '/bayar';
+
+    const modal = document.getElementById('bayarModal');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+
+function closeBayarModal()
+{
+    const modal = document.getElementById('bayarModal');
+
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+</script>
 
 @endsection

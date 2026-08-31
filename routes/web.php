@@ -8,6 +8,7 @@ use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\PenggajianController;
 use App\Http\Controllers\TahunPelajaranController;
 use App\Http\Controllers\JadwalMengajarController;
+use App\Http\Controllers\AkunController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:tata_usaha')->group(function () {
 
         Route::resource('pegawai', PegawaiController::class);
+
+        Route::resource('akun', AkunController::class)
+            ->except(['show']);
 
         Route::resource('jabatan', JabatanController::class);
 

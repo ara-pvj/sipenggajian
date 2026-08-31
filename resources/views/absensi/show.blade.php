@@ -30,7 +30,7 @@
         </div>
 
         <div>
-            <p class="font-semibold">Jam Pulang</p>
+            <p class="font-semibold">Jam Selesai</p>
             <p>{{ $absensi->jam_pulang ?? '-' }}</p>
         </div>
 
@@ -59,7 +59,7 @@
 
         <div>
 
-            <p class="font-semibold mb-2">Foto Pulang</p>
+            <p class="font-semibold mb-2">Foto Selesai</p>
 
             @if($absensi->foto_pulang)
 

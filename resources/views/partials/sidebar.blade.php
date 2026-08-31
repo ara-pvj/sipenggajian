@@ -73,6 +73,14 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path stroke-width="1.8" stroke-linecap="round" d="M2.5 21a6.5 6.5 0 0 1 13 0M16 4.5a4 4 0 0 1 0 7.5M17 15h1a4 4 0 0 1 4 4v2"/></svg>
             <span class="font-medium">Data Pegawai</span>
         </a>
+
+                <a href="{{ route('akun.index') }}"
+           class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 {{ request()->routeIs('akun.*') ? 'bg-white/20 shadow-lg' : '' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M15 7a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM3 21a6 6 0 0 1 12 0M16 11h5M18.5 8.5v5"/>
+            </svg>
+            <span class="font-medium">Pengelolaan Akun</span>
+        </a>
         
         <a href="{{ route('absensi.index') }}" 
    class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 {{ request()->routeIs('absensi.index') ? 'bg-white/20 shadow-lg' : '' }}">
@@ -173,10 +181,10 @@ class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 t
         <div class="bg-white/5 rounded-xl p-4 mb-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold">
-                    {{ strtoupper(substr(Auth::user()->pegawai->nama, 0, 2)) }}
+                    {{ strtoupper(substr(Auth::user()->pegawai->nama ?? Auth::user()->name, 0, 2)) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm truncate">{{ Auth::user()->pegawai->nama }}</p>
+                    <p class="font-semibold text-sm truncate">{{ Auth::user()->pegawai->nama ?? Auth::user()->name }}</p>
                     <p class="text-blue-200 text-xs truncate">{{ ucwords(str_replace('_', ' ', Auth::user()->role)) }}</p>
                 </div>
             </div>

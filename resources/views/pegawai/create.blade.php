@@ -32,6 +32,26 @@
     </div>
 
     <div class="mb-4">
+    <label class="block mb-2 font-semibold">Mata Pelajaran</label>
+
+    <select
+        name="mata_pelajaran[]"
+        multiple
+        class="w-full border rounded-lg p-3"
+    >
+        @foreach($mataPelajaran as $mapel)
+            <option value="{{ $mapel->id }}">
+                {{ $mapel->nama }}
+            </option>
+        @endforeach
+    </select>
+
+    <p class="text-sm text-gray-500 mt-1">
+        Tekan Ctrl/Command untuk memilih lebih dari satu mata pelajaran.
+    </p>
+</div>
+
+    <div class="mb-4">
         <label class="block mb-2 font-semibold">Jabatan</label>
 
         <select

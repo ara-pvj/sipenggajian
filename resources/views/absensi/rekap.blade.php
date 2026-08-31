@@ -78,16 +78,21 @@
         <table class="min-w-full">
             <thead class="bg-gradient-to-r from-blue-700 to-blue-500 text-white uppercase tracking-wide">
     <tr>
-        <th class="px-6 py-4 text-center">No</th>
-        <th class="px-6 py-4">Nama Pegawai</th>
-        <th class="px-6 py-4 text-center">Jenis Pegawai</th>
-        <th class="px-6 py-4 text-center">Jumlah Hadir</th>
-        <th class="px-6 py-4 text-center">Total JP</th>
-    </tr>
+    <th class="px-6 py-4 text-center">No</th>
+    <th class="px-6 py-4">Nama Pegawai</th>
+    <th class="px-6 py-4 text-center">Jenis Pegawai</th>
+    <th class="px-6 py-4 text-center">Jumlah Hadir</th>
+    <th class="px-6 py-4 text-center">JP Jadwal / Minggu</th>
+    <th class="px-6 py-4 text-center">Target JP / Bulan</th>
+    <th class="px-6 py-4 text-center">JP Hadir</th>
+    <th class="px-6 py-4 text-center">Pencapaian</th>
+</tr>
+
 </thead>
             <tbody>
     @forelse($data as $item)
     <tr class="border-b hover:bg-blue-50 duration-300">
+
         <td class="text-center py-4">
             {{ $loop->iteration }}
         </td>
@@ -101,11 +106,34 @@
         </td>
 
         <td class="text-center">
-    <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
-        {{ $item->jumlah_hadir }}
-    </span>
-</td>
+            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
+                {{ $item->jumlah_hadir }}
+            </span>
+        </td>
 
+        {{-- JP JADWAL PER MINGGU --}}
+        <td class="text-center">
+            @if($item->jenis == 'guru')
+                <span class="bg-purple-100 text-purple-700 px-4 py-2 rounded-full font-semibold">
+                    {{ $item->jp_jadwal_minggu }} JP
+                </span>
+            @else
+                -
+            @endif
+        </td>
+
+        {{-- TARGET JP PADA BULAN YANG DIPILIH --}}
+        <td class="text-center">
+            @if($item->jenis == 'guru')
+                <span class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold">
+                    {{ $item->jp_jadwal_bulan }} JP
+                </span>
+            @else
+                -
+            @endif
+        </td>
+
+        {{-- JP YANG BENAR-BENAR HADIR --}}
         <td class="text-center">
             @if($item->jenis == 'guru')
                 <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
@@ -115,10 +143,23 @@
                 -
             @endif
         </td>
+
+        {{-- PERSENTASE REALISASI --}}
+        <td class="text-center">
+            @if($item->jenis == 'guru' && $item->persentase !== null)
+                <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
+                    {{ $item->persentase }}%
+                </span>
+            @else
+                -
+            @endif
+        </td>
+
     </tr>
+
     @empty
     <tr>
-        <td colspan="5" class="text-center py-10 text-gray-500">
+        <td colspan="8" class="text-center py-10 text-gray-500">
             Belum ada data rekap absensi.
         </td>
     </tr>

@@ -51,7 +51,7 @@
 
                 <div>
                     <label class="block font-semibold text-gray-700 mb-2">
-                        Jam Pulang
+                        Jam Selesai
                     </label>
 
                     <input type="time"

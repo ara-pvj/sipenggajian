@@ -7,6 +7,9 @@ use App\Models\Pegawai;
 use App\Models\Jabatan;
 use App\Models\JadwalMengajar;
 use App\Models\MasterKomponenPenggajian;
+use App\Models\MataPelajaran;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 
 
@@ -48,8 +51,13 @@ class PegawaiController extends Controller
     public function create()
 {
     $jabatan = Jabatan::all();
+    $mataPelajaran = MataPelajaran::all();
 
-    return view('pegawai.create', compact('jabatan'));
+    return view('pegawai.create', compact(
+        'jabatan',
+        'mataPelajaran'
+    ));
+
 }
     /**
      * Store a newly created resource in storage.
@@ -60,6 +68,8 @@ class PegawaiController extends Controller
         'nama' => 'required|string|max:255',
         'jenis_pegawai' => 'required|in:guru,staff',
         'jabatan_id' => 'nullable|exists:jabatan,id',
+        'mata_pelajaran' => 'nullable|array',
+        'mata_pelajaran.*' => 'exists:mata_pelajarans,id',
         'tempat_lahir' => 'required|string|max:255',
         'tanggal_lahir' => 'required|date',
         'alamat' => 'required|string',
@@ -76,6 +86,10 @@ class PegawaiController extends Controller
     'tanggal_lahir' => $request->tanggal_lahir,
     'alamat' => $request->alamat,
 ]);
+
+if ($request->jenis_pegawai == 'guru' && $request->has('mata_pelajaran')) {
+    $pegawai->mataPelajaran()->sync($request->mata_pelajaran);
+}
 
 $master = MasterKomponenPenggajian::first();
 
@@ -121,16 +135,68 @@ return redirect()->route('pegawai.index')
    public function edit($id)
 {
     $pegawai = Pegawai::findOrFail($id);
-
     $jabatan = Jabatan::all();
-
+    $mataPelajaran = MataPelajaran::all();
     $jadwal = $pegawai->jadwalMengajar()->get()->keyBy('hari');
 
     return view('pegawai.edit', compact(
         'pegawai',
         'jabatan',
+        'mataPelajaran',
         'jadwal'
     ));
+}
+
+public function buatAkun($id)
+{
+    $pegawai = Pegawai::findOrFail($id);
+
+    // Cek apakah pegawai sudah punya akun
+    if ($pegawai->user) {
+        return redirect()
+            ->route('pegawai.index')
+            ->with('error', 'Pegawai ini sudah memiliki akun.');
+    }
+
+    // Hanya guru dan staff yang bisa dibuatkan akun
+    if (!in_array($pegawai->jenis_pegawai, ['guru', 'staff'])) {
+        return redirect()
+            ->route('pegawai.index')
+            ->with('error', 'Jenis pegawai ini tidak dapat dibuatkan akun.');
+    }
+
+    // Buat email otomatis dari nama pegawai
+    $email = strtolower(
+        preg_replace('/[^a-zA-Z0-9]/', '', $pegawai->nama)
+    ) . '@gmail.com';
+
+    // Pastikan email tidak bentrok
+    $emailAwal = $email;
+    $angka = 1;
+
+    while (User::where('email', $email)->exists()) {
+        $email = str_replace(
+            '@gmail.com',
+            $angka . '@gmail.com',
+            $emailAwal
+        );
+        $angka++;
+    }
+
+    User::create([
+        'pegawai_id' => $pegawai->id,
+        'name' => $pegawai->nama,
+        'email' => $email,
+        'password' => Hash::make('12345678'),
+        'role' => $pegawai->jenis_pegawai,
+    ]);
+
+    return redirect()
+        ->route('pegawai.index')
+        ->with(
+            'success',
+            "Akun {$pegawai->nama} berhasil dibuat. Password awal: 12345678"
+        );
 }
     /**
      * Update the specified resource in storage.
@@ -160,6 +226,12 @@ return redirect()->route('pegawai.index')
     'gaji_pokok' => $request->gaji_pokok,
     'transport' => $request->transport,
 ]);
+
+if ($request->jenis_pegawai == 'guru') {
+    $pegawai->mataPelajaran()->sync($request->mata_pelajaran ?? []);
+} else {
+    $pegawai->mataPelajaran()->detach();
+}
 
     // ===== UPDATE JADWAL MENGAJAR (HANYA UNTUK GURU) =====
     if ($request->jenis_pegawai == 'guru') {

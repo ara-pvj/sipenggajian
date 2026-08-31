@@ -14,6 +14,9 @@
         Pastikan wajah terlihat jelas sebelum melakukan absensi.
     </p>
 
+    <div id="notif" class="hidden mb-5 px-5 py-4 rounded-xl bg-red-100 text-red-700 font-medium">
+</div>
+
     <div class="bg-white rounded-2xl shadow p-6">
 
         <video
@@ -96,13 +99,29 @@ capture.addEventListener('click', function () {
     if(response.ok){
     window.location.href = "{{ route('absensi.berhasil') }}";
 }else{
-    alert(text);
+    let message = text;
+
+    try {
+        const data = JSON.parse(text);
+        message = data.message ?? text;
+    } catch (e) {
+        // Jika response bukan JSON, gunakan text biasa
+    }
+
+    const notif = document.getElementById('notif');
+
+    notif.textContent = '❌ ' + message;
+    notif.classList.remove('hidden');
 }
 
 })
 .catch((error) => {
     console.error(error);
-    alert("Terjadi kesalahan.");
+
+    const notif = document.getElementById('notif');
+
+    notif.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+    notif.classList.remove('hidden');
 });
 
 });

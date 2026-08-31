@@ -527,7 +527,7 @@ public function slipShow($id)
     $penggajian->status = 'Sudah Dibayar';
     $penggajian->save();
 
-    return redirect()->route('penggajian.index')
-        ->with('success', 'Penggajian berhasil dibayar.');
+   return redirect()->route('slip.index')
+    ->with('success', 'Penggajian berhasil dibayar.');
 }
 }

@@ -85,8 +85,8 @@
                     <th class="px-6 py-4 text-center">Tanggal</th>
                     <th class="px-6 py-4 text-center whitespace-nowrap">Foto Masuk</th>
                     <th class="px-6 py-4 text-center whitespace-nowrap">Jam Masuk</th>
-                    <th class="px-6 py-4 text-center whitespace-nowrap">Foto Pulang</th>
-                    <th class="px-6 py-4 text-center whitespace-nowrap">Jam Pulang</th>
+                    <th class="px-6 py-4 text-center whitespace-nowrap">Foto Selesai</th>
+                    <th class="px-6 py-4 text-center whitespace-nowrap">Jam Selesai</th>
                     <th class="px-6 py-4 text-center">JP</th>
                     <th class="px-6 py-4 text-center">Status</th>
                     <th class="px-6 py-4 text-center">Aksi</th>

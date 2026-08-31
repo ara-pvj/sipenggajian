@@ -117,6 +117,34 @@
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
+
+            <!-- Mata Pelajaran (khusus Guru) -->
+<div id="mataPelajaranGuru" class="md:col-span-2">
+    <label class="block text-sm font-semibold text-gray-700 mb-2">
+        Mata Pelajaran
+    </label>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        @foreach($mataPelajaran as $mapel)
+            <label class="flex items-center gap-2 border rounded-lg p-3 cursor-pointer hover:bg-gray-50">
+                <input
+                    type="checkbox"
+                    name="mata_pelajaran[]"
+                    value="{{ $mapel->id }}"
+                    {{ $pegawai->mataPelajaran->contains($mapel->id) ? 'checked' : '' }}
+                    class="w-4 h-4 text-blue-600 rounded"
+                >
+                <span class="text-sm text-gray-700">
+                    {{ $mapel->nama }}
+                </span>
+            </label>
+        @endforeach
+    </div>
+
+    @error('mata_pelajaran')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
             
             <!-- Tarif per JP (khusus Guru) -->
             <div id="tarifGuru">

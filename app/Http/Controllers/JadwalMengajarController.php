@@ -27,15 +27,16 @@ class JadwalMengajarController extends Controller
 
     public function create()
 {
-    $guru = Pegawai::where('jenis_pegawai', 'guru')->get();
+    $guru = Pegawai::with('mataPelajaran')
+        ->where('jenis_pegawai', 'guru')
+        ->get();
 
     $tahunAktif = TahunPelajaran::where('status', 'Aktif')->first();
 
-return view('jadwal_mengajar.create', compact(
-    'guru',
-    'tahunAktif'
-));
-
+    return view('jadwal_mengajar.create', compact(
+        'guru',
+        'tahunAktif'
+    ));
 }
 
     public function store(Request $request)
